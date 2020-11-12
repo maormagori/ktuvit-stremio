@@ -19,6 +19,7 @@
   "homepage": "https://github.com/maormagori/ktuvit-stremio#readme",
   "dependencies": {
     "jsdom": "^16.4.0",
-    "superagent": "^6.1.0"
+    "superagent": "^6.1.0",
+    "superagent-charset": "^1.2.0"
   }
 }
