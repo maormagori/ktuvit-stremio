@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "node bin/ktuvitHelper.js"
+    "test": "node lib/search.js"
   },
   "repository": {
     "type": "git",
