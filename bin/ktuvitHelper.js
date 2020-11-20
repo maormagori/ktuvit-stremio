@@ -2,6 +2,8 @@ const superagent = require("superagent")
     require('superagent-charset')(superagent),
     jsdom = require('jsdom');
 
+
+// TODO: add error handling everywhere.
 class KtuvitManager {
     
     constructor(loginCookie){
@@ -30,7 +32,7 @@ class KtuvitManager {
             //.timeout({deadline: 6000})
             .set(this.headers)
             .send({"request" :data})
-            .then((res) => {console.log("PING!"); resolve(res)})
+            .then((res) => { resolve(res)})
             .catch((err) => {reject(err)})
         })
     }
@@ -41,7 +43,7 @@ class KtuvitManager {
             .withCredentials()
             //.timeout({deadline: 6000})
             .set(this.headers)
-            .then((res) => {console.log("PING!"); resolve(res)})
+            .then((res) => { resolve(res)})
             .catch((err) => {reject(err)})
         })
     }
@@ -59,14 +61,14 @@ class KtuvitManager {
                     "Genres": [],
                     "Countries": [],
                     "Languages": [],
-                    "Year": `${item.year}`.split("-")[0],
+                    "Year": `${item.year}`.split("–")[0],
                     "Rating": [],
                     "Page": 1,
                     "SearchType": item.type === "movie" ? "0":"1",
                     "WithSubsOnly": false
         };
 
-        console.log(query)
+        //console.log(query)
 
         if (item.type === "movie")
             query.SearchType = "0";
@@ -86,7 +88,7 @@ class KtuvitManager {
 
     findIDInResults(body, imdbId){
         //console.log(body);
-        console.log({ImdbId: imdbId,body: body});
+        //console.log({ImdbId: imdbId,body: body});
         const films = [...JSON.parse(body.d).Films]
 
         return films.find(title => title.ImdbID == imdbId).ID;
@@ -137,7 +139,7 @@ class KtuvitManager {
         return subtitlesIDs;
     }
 
-    async downloadSubtitle(KtuvitId, subId, cb, shouldDecode=false){
+    async downloadSubtitle(KtuvitId, subId, cb){
         const downloadIdentifierRequest = {
             "FilmID": KtuvitId,
             "SubtitleID": subId,
@@ -158,21 +160,7 @@ class KtuvitManager {
             .catch(err => err)
     }
 
-    //Not using this parser. Might be useful to implement it.
-    // parseBuffer(res, resolve){
-    //     let buffer = [];
-    //     res.on('data', (chunk)=>{
-    //         buffer.push(iconv.decode(chunk, 'ISO 8859-8'));
-    //     });
-    //     res.on('end', ()=>
-    //         resolve(null, Buffer.concat(buffer)));
-    // }
 
 }
 
-const manager = new KtuvitManager("u=7CA271EC2204B13FAE3F3CFE9D24F3AC&g=3B82622A00E8D3D24F982498638320F48803A3A8CED4220DEDCFBE2A06219528853A8A8AFC7589346C15A2979E58EC07")
-//manager.getKtuvitID({year: 2008, type: 'series',name: 'Breaking Bad', imdbId: 'tt0903747'}).then(id=>console.log(id));
-//manager.getSubsIDsListMovie("3E488DFBF1B06910D8EAD33F60680FF9");
-//manager.getSubsIDsListEpisode("C6DCA1F5779E310E8FC2DD53AC4C40FC",4,8);
-
-manager.downloadSubtitle('C6DCA1F5779E310E8FC2DD53AC4C40FC','41E986A04698829FFCE5CFD430C7F4F3',(buffer) => {console.log(buffer)},true);
+module.exports = KtuvitManager;
