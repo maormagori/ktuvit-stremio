@@ -4,8 +4,8 @@
   "description": "An unofficial addon for ktuvit.me",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
+    "start": "node index.js",
+    "test": "node lib/search.js"
   },
   "repository": {
     "type": "git",
@@ -16,5 +16,10 @@
   "bugs": {
     "url": "https://github.com/maormagori/ktuvit-stremio/issues"
   },
-  "homepage": "https://github.com/maormagori/ktuvit-stremio#readme"
+  "homepage": "https://github.com/maormagori/ktuvit-stremio#readme",
+  "dependencies": {
+    "jsdom": "^16.4.0",
+    "superagent": "^6.1.0",
+    "superagent-charset": "^1.2.0"
+  }
 }
