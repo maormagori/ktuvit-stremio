@@ -1,2 +1,3 @@
-# ktuvit-stremio
-An unofficial addon for ktuvit.me
+# Ktuvit Stremio
+
+An unofficial [Stremio](http://strem.io/) addon for ktuvit.me.
