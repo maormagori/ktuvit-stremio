@@ -155,8 +155,8 @@ class KtuvitManager {
             .charset('ISO-8859-8')
             .withCredentials()
             .set(this.headers)
-            .buffer()
-            .then(res => {cb(res)})
+            .buffer(true)
+            .then(res => {cb(res.text)})
             .catch(err => err)
     }
 
