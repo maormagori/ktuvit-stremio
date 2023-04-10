@@ -13,6 +13,8 @@ const MANIFEST = {
   logo: "https://i0.wp.com/kodibeginner.com/wp-content/uploads/2020/10/ktuvit-me.jpg?w=300&ssl=1",
 };
 
-module.exports = (req, res) => {
+const serveManifest = (req, res) => {
   res.send(MANIFEST);
 };
+
+module.exports = { serveManifest, MANIFEST };
