@@ -2,7 +2,8 @@ const logger = require("./common/logger");
 const config = require("config");
 const express = require("express");
 const cors = require("cors");
-const manifest = require("./routes/manifest");
+const { serveManifest } = require("./routes/manifest");
+const landing = require("./routes/landing/landing");
 
 const PORT = config.get("PORT");
 const HTTP = config.get("ssl") ? "https" : "http";
@@ -18,7 +19,14 @@ const respondWithHeaders = function (req, res, next) {
   next();
 };
 
-addon.get("/manifest.json", [respondWithHeaders, manifest]);
+addon.get("/manifest.json", [respondWithHeaders, serveManifest]);
+
+addon.get("/", landing);
+
+//Addon's readme request
+addon.get("/README.md", (req, res) => {
+  res.sendFile(`${__dirname}/README.md`);
+});
 
 addon.listen(PORT, function () {
   logger.info(`Started addon on: ${HTTP}://${HOSTNAME}:${PORT}`);
