@@ -1,5 +1,5 @@
 const { createLogger, format, transports } = require("winston");
-var config = require("config");
+const config = require("config");
 
 const customFormat = format.printf(({ level, message, timestamp }) => {
   return `${timestamp} [${level}]: ${message}`;
