@@ -1,27 +1,25 @@
 {
   "name": "ktuvit-stremio",
   "version": "1.0.0",
-  "description": "An unofficial addon for ktuvit.me",
+  "description": "An unofficial Stremio addon for ktuvit.me",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "test": ""
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/maormagori/ktuvit-stremio.git"
   },
-  "author": "Maor Development",
-  "license": "ISC",
+  "keywords": [
+    "stremio"
+  ],
+  "author": "Maor Magori",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/maormagori/ktuvit-stremio/issues"
   },
   "homepage": "https://github.com/maormagori/ktuvit-stremio#readme",
-  "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^4.17.1",
-    "jsdom": "^16.4.0",
-    "superagent": "^6.1.0",
-    "superagent-charset": "^1.2.0"
+  "devDependencies": {
+    "eslint": "^8.38.0"
   }
 }
