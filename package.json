@@ -30,7 +30,10 @@
   "dependencies": {
     "config": "^3.3.9",
     "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
     "express": "^4.18.2",
+    "fastest-levenshtein": "^1.0.16",
+    "ktuvit-api": "^0.2.5",
     "winston": "^3.8.2"
   }
 }
