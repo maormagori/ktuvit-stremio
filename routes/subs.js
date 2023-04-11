@@ -86,20 +86,20 @@ const formatSubs = (req, res) => {
       lang: "heb",
       url: config.get("enableLocalServerEncoding")
         ? LOCAL_SERVER_ENCODER_URL + formatSrtUrl(ktuvitSub.id)
-        : formatSrtUrl(ktuvitSub.id),
+        : formatSrtUrl(req.title.ktuvitID, ktuvitSub.id),
     });
 
   sortSubsByFilename(stremioSubs);
   res.send(stremioSubs);
 };
 
-const formatSrtUrl = (ktuvitSubId) => {
+const formatSrtUrl = (ktuvitTitleId, ktuvitSubId) => {
   const PORT = config.get("PORT");
   const HTTP = config.get("ssl") ? "https" : "http";
   const HOSTNAME = config.get("HOSTNAME");
 
   const addonUrl = `${HTTP}://${HOSTNAME}:${PORT}`;
-  const finalSrtRoute = `${addonUrl}/srt/${ktuvitSubId}`;
+  const finalSrtRoute = `${addonUrl}/srt/${ktuvitTitleId}/${ktuvitSubId}.srt`;
 
   return finalSrtRoute;
 };
