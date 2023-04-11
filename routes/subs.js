@@ -65,7 +65,7 @@ const fetchSubsFromKtuvit = async (title) => {
       return await ktuvit.getSubsIDsListMovie(title.ktuvitID);
     case type.SERIES:
       return await ktuvit.getSubsIDsListEpisode(
-        title.imdbID,
+        title.ktuvitID,
         title.season,
         title.episode
       );
