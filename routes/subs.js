@@ -117,6 +117,7 @@ const sortSubsByFilename = (stremioSubsArray, titleFilename) => {
     );
   });
 };
+
 module.exports = {
   extractTitleInfo,
   fetchSubsMiddleware,
