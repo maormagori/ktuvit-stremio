@@ -1,4 +1,5 @@
 const { initKtuvitManager } = require("../clients/ktuvit");
+const logger = require("../common/logger");
 
 let ktuvit;
 const initSrtDownloader = async () => {
@@ -15,7 +16,14 @@ const downloadSrtFromKtuvit = (req, res) => {
     res.end(Buffer.from(fileBuffer));
   };
 
-  ktuvit.downloadSubtitle(titleKtuvitId, subKtuvitId, pipeFile);
+  try {
+    ktuvit.downloadSubtitle(titleKtuvitId, subKtuvitId, pipeFile);
+  } catch (err) {
+    logger.error("Error downloading SRT file.", err, {
+      ktuvitTitleID: titleKtuvitId,
+      ktuvitSubID: subKtuvitId,
+    });
+  }
 };
 
 module.exports = { initSrtDownloader, downloadSrtFromKtuvit };
