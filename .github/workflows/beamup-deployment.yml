@@ -1,0 +1,47 @@
+name: Deploy addon to beamup
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  beamup-deploy:
+    name: Deploy to beamup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - name: Install beamup
+        run: npm install beamup-cli -g
+      - name: Create beamup config
+        env:
+          BEAMUP_CONFIG_JSON: ${{ secrets.BEAMUP_CONFIG_JSON }}
+        run: |
+          touch ~/beamup-config.json
+          echo "$BEAMUP_CONFIG_JSON" > ~/beamup-config.json
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Add beamup remote
+      uses: kielabokkie/ssh-key-and-known-hosts-action@v1
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+        ssh-host: your-server.com
+        run: |
+          mkdir ~/.ssh/
+          touch ~/.ssh/known_hosts
+          ssh-keyscan -H a.baby-beamup.club >> ~/.ssh/known_hosts
+          git remote add beamup ${{ secrets.BEAMUP_REMOTE }}
+      - name: Add private key
+        env: 
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+        run: |
+          touch ~/.ssh/id_rsa
+          echo "$SSH_KEY" > ~/.ssh/id_rsa
+          chmod 400 ~/.ssh/id_rsa
+      - name: Deploy addon to beamup
+        run: git push beamup HEAD:master --force
