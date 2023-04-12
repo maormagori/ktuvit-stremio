@@ -82,7 +82,7 @@ const formatSubs = (req, res) => {
   for (const ktuvitSub of req.ktuvitSubs)
     stremioSubs.subtitles.push({
       // Sub's file name will serve as the ID as requested by users.
-      id: ktuvitSub.subName,
+      id: `[KTUVIT]${ktuvitSub.subName}`,
       lang: "heb",
       url: config.get("enableLocalServerEncoding")
         ? LOCAL_SERVER_ENCODER_URL + formatSrtUrl(ktuvitSub.id)
