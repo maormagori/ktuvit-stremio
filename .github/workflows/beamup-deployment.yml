@@ -26,22 +26,12 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Add beamup remote
-      uses: kielabokkie/ssh-key-and-known-hosts-action@v1
-      with:
-        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-        ssh-host: your-server.com
-        run: |
-          mkdir ~/.ssh/
-          touch ~/.ssh/known_hosts
-          ssh-keyscan -H a.baby-beamup.club >> ~/.ssh/known_hosts
-          git remote add beamup ${{ secrets.BEAMUP_REMOTE }}
-      - name: Add private key
-        env: 
-          SSH_KEY: ${{ secrets.SSH_KEY }}
-        run: |
-          touch ~/.ssh/id_rsa
-          echo "$SSH_KEY" > ~/.ssh/id_rsa
-          chmod 400 ~/.ssh/id_rsa
+      - name: Add beamup host to known hosts
+        uses: kielabokkie/ssh-key-and-known-hosts-action@v1
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          ssh-host: a.baby-beamup.club
+      - name: Add beamup remote repository
+        run: git remote add beamup ${{ vars.BEAMUP_REPO }}
       - name: Deploy addon to beamup
         run: git push beamup HEAD:master --force
