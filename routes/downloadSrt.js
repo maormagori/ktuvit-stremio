@@ -23,6 +23,7 @@ const downloadSrtFromKtuvit = (req, res) => {
       ktuvitTitleID: titleKtuvitId,
       ktuvitSubID: subKtuvitId,
     });
+    res.status(500).send("Could not fetch SRT file.");
   }
 };
 
