@@ -12,6 +12,10 @@ const {
   formatSubs,
   initSubs,
 } = require("./routes/subs");
+const {
+  initSrtDownloader,
+  downloadSrtFromKtuvit,
+} = require("./routes/downloadSrt");
 
 const PORT = config.get("PORT");
 const HTTP = config.get("ssl") ? "https" : "http";
@@ -43,11 +47,14 @@ addon.get("/subtitles/:type/:imdbId/:query?.json", [
   formatSubs,
 ]);
 
+addon.get("/srt/:ktuvitId/:subId?.srt", downloadSrtFromKtuvit);
+
 async function init() {
   logger.info("Starting initialization.");
   try {
     await initKtuvitManager();
     await initSubs();
+    await initSrtDownloader();
     addon.listen(PORT, function () {
       logger.info(`Started addon on: ${HTTP}://${HOSTNAME}:${PORT}`);
     });
