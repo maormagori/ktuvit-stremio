@@ -3,5 +3,6 @@
   "ktuvit": {
     "email": "KTUVIT_USER_EMAIL",
     "hashedPassword": "KTUVIT_USER_HASHED_PASSWORD"
-  }
+  },
+  "PORT": "PORT"
 }
