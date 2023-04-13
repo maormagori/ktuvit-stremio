@@ -98,7 +98,12 @@ const formatSrtUrl = (ktuvitTitleId, ktuvitSubId) => {
   const HTTP = config.get("ssl") ? "https" : "http";
   const HOSTNAME = config.get("HOSTNAME");
 
-  const addonUrl = `${HTTP}://${HOSTNAME}:${PORT}`;
+  // Beamup deployment is behind a proxy so I remove the useless port.
+  const isBeamupDeployment = config.util.getEnv("NODE_ENV") === "beamup";
+  const addonUrl = `${HTTP}://${HOSTNAME}${
+    isBeamupDeployment ? "" : `:${PORT}`
+  }`;
+
   const finalSrtRoute = `${addonUrl}/srt/${ktuvitTitleId}/${ktuvitSubId}.srt`;
 
   return finalSrtRoute;
