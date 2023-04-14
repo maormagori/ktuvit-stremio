@@ -11,11 +11,11 @@ const initSubs = async () => {
   ktuvit = await initKtuvitManager();
 };
 
-const fetchSubsMiddleware = async (req, res, next) => {
-  if (!req.title.ktuvitID) {
-    next();
-  }
+const exitEarlyWithEmptySubtitlesArray = (res) => {
+  res.send({ subtitles: [] });
+};
 
+const fetchSubsMiddleware = async (req, res, next) => {
   try {
     const ktuvitFetchedSubs = await fetchSubsFromKtuvit(req.title);
     req.ktuvitSubs = ktuvitFetchedSubs;
@@ -23,7 +23,6 @@ const fetchSubsMiddleware = async (req, res, next) => {
   } catch (err) {
     logger.error("Error occurred while fetching title subs from ktuvit: ", err);
     req.ktuvitSubs = [];
-    next();
   }
 };
 
@@ -32,14 +31,28 @@ const extractTitleInfo = async (req, res, next) => {
   const [imdbID, season, episode] = deconstructImdbId(req.params.imdbId);
   const extraArgs = extractExtraArgs(req.params?.query);
 
-  const ktuvitID = await ktuvit.getKtuvitID({
-    type: type,
-    imdbId: imdbID,
-  });
+  try {
+    const ktuvitID = await ktuvit.getKtuvitID({
+      type: type,
+      imdbId: imdbID,
+    });
 
-  req.title = { type, imdbID, season, episode, ktuvitID, ...extraArgs };
-
-  next();
+    if (!ktuvitID) {
+      exitEarlyWithEmptySubtitlesArray(res);
+    } else {
+      req.title = { type, imdbID, season, episode, ktuvitID, ...extraArgs };
+      next();
+    }
+  } catch (err) {
+    logger.error("Unable to get title's ktuvit ID", {
+      type,
+      imdbID,
+      season,
+      episode,
+      extraArgs,
+    });
+    exitEarlyWithEmptySubtitlesArray(res);
+  }
 };
 
 const deconstructImdbId = (imdbParam) => {
@@ -115,10 +128,10 @@ const sortSubsByFilename = (stremioSubsArray, titleFilename) => {
     return;
   }
 
-  stremioSubsArray.sort((firstSub, secondSub) => {
+  stremioSubsArray.subtitles.sort((firstSub, secondSub) => {
     return (
-      distance(titleFilename, firstSub.version) -
-      distance(titleFilename, secondSub.version)
+      distance(titleFilename, firstSub.id.replace("[KTUVIT]", "")) -
+      distance(titleFilename, secondSub.id.replace("[KTUVIT]", ""))
     );
   });
 };
