@@ -268,7 +268,7 @@ function landingTemplate(manifest) {
             
          </div>
          <div class="markdown">
-            <a href="https://github.com/maormagori/wizdom-stremio-v2" class="github">
+            <a href="https://github.com/maormagori/ktuvit-stremio" class="github">
                <i class="fa fa-github"></i>
                <span> Github README.md </span>
             </a>
