@@ -244,7 +244,7 @@ function landingTemplate(manifest) {
       <div id="background-shade" style="background:rgba(0, 0, 0, 0.60);padding-top: 30px;">
          <div id="addon">
             <div class="logo">
-               <a href="https://wizdom.xyz/">
+               <a href="https://ktuvit.me/">
                   <img src="${logo}">
                </a>
             </div>
