@@ -12,18 +12,6 @@ jobs:
     name: Deploy to beamup
     runs-on: ubuntu-latest
     steps:
-      - name: Setup Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-      - name: Install beamup
-        run: npm install beamup-cli -g
-      - name: Create beamup config
-        env:
-          BEAMUP_CONFIG_JSON: ${{ secrets.BEAMUP_CONFIG_JSON }}
-        run: |
-          touch ~/beamup-config.json
-          echo "$BEAMUP_CONFIG_JSON" > ~/beamup-config.json
       - name: Checkout repo
         uses: actions/checkout@v3
         with:
@@ -42,8 +30,11 @@ jobs:
       - name: Add beamup remote repository
         run: git remote add beamup ${{ vars.BEAMUP_REPO }}
       - name: Create env varriables
+        env:
+          KTUVIT_USER_EMAIL: ${{ secrets.KTUVIT_USER_EMAIL }}
+          KTUVIT_USER_HASHED_PASSWORD: ${{ secrets.KTUVIT_USER_HASHED_PASSWORD }}
         run: |
-          beamup secrets KTUVIT_USER_EMAIL ${{ secrets.KTUVIT_USER_EMAIL }}
-          beamup secrets KTUVIT_USER_HASHED_PASSWORD ${{ secrets.KTUVIT_USER_HASHED_PASSWORD }}
+          ssh dokku@a.baby-beamup.club config:set 4b139a4b7f94/ktuvit-stremio KTUVIT_USER_EMAIL="$KTUVIT_USER_EMAIL"
+          ssh dokku@a.baby-beamup.club config:set 4b139a4b7f94/ktuvit-stremio KTUVIT_USER_HASHED_PASSWORD="$KTUVIT_USER_HASHED_PASSWORD"
       - name: Deploy addon to beamup
         run: git push beamup HEAD:master --force
