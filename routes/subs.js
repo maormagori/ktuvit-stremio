@@ -112,7 +112,7 @@ const formatSrtUrl = (ktuvitTitleId, ktuvitSubId) => {
   const HOSTNAME = config.get("HOSTNAME");
 
   // Beamup deployment is behind a proxy so I remove the useless port.
-  const isBeamupDeployment = config.util.getEnv("NODE_ENV") === "beamup";
+  const isBeamupDeployment = config.util.getEnv("NODE_ENV") === "production";
   const addonUrl = `${HTTP}://${HOSTNAME}${
     isBeamupDeployment ? "" : `:${PORT}`
   }`;
