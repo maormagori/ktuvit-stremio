@@ -45,6 +45,6 @@ jobs:
         run: |
           beamup secrets KTUVIT_USER_EMAIL ${{ secrets.KTUVIT_USER_EMAIL }}
           beamup secrets KTUVIT_USER_HASHED_PASSWORD ${{ secrets.KTUVIT_USER_HASHED_PASSWORD }}
-          beamup secrets NODE_ENV beamup
+          beamup secrets NODE_ENV production
       - name: Deploy addon to beamup
         run: git push beamup HEAD:master --force
