@@ -1,4 +1,4 @@
-name: Render.io deployment 
+name: Render.com deployment 
 
 on: 
   push:
