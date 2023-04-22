@@ -1,9 +1,10 @@
 const config = require("config");
+const PACKAGE_VERSION = require("../package.json").version;
 
 const MANIFEST = {
   id: "me.stremio.ktuvit",
   contactEmail: config.get("addonAuthorEmail"),
-  version: process.env.npm_package_version,
+  version: process.env.npm_package_version || PACKAGE_VERSION,
   catalogs: [],
   resources: ["subtitles"],
   types: ["movie", "series"],
