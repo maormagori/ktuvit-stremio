@@ -1,5 +1,5 @@
 # Ktuvit Stremio Addon
-![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/maormagori/ktuvit-stremio/beamup-deployment.yml?style=for-the-badge)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/maormagori/ktuvit-stremio/render-deployment.yml?style=for-the-badge)
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/maormagori)
 
 
@@ -12,7 +12,7 @@ It allows you to add Hebrew subtitles from Ktuvit to media streamed by Stremio. 
 The addon is available in the community addons section in Stremio. Search for "Ktuvit.me Subtitles" and press on install.
 
 Alternatively, you can install the addon directly from here:
-https://4b139a4b7f94-ktuvit-stremio.baby-beamup.club/
+https://ktuvit-stremio.onrender.com/
 
 ## Development
 

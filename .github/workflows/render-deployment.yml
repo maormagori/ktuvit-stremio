@@ -1,0 +1,22 @@
+name: Render.com deployment 
+
+on: 
+  push:
+    tags:
+      - v*
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Wait for Render deployment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for Render Deployment
+        uses: bounceapp/render-action@0.6.0
+        with:
+          render-token: ${{ secrets.RENDER_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          service-id: srv-ch222hl269v61fbc9cr0
+          retries: 20
+          sleep: 10000
