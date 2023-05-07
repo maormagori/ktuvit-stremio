@@ -33,7 +33,7 @@
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "fastest-levenshtein": "^1.0.16",
-    "ktuvit-api": "^0.3.0",
+    "ktuvit-api": "^0.4.0",
     "winston": "^3.8.2"
   }
 }
