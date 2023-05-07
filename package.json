@@ -1,6 +1,6 @@
 {
   "name": "ktuvit-stremio",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "An unofficial Stremio addon for ktuvit.me",
   "main": "index.js",
   "scripts": {
