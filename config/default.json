@@ -3,5 +3,6 @@
   "ssl": false,
   "HOSTNAME": "localhost",
   "addonAuthorEmail": "maor@magori.online",
-  "enableLocalServerEncoding": false
+  "enableLocalServerEncoding": false,
+  "bytesNeededForDetection": 256
 }

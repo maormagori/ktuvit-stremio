@@ -1,5 +1,8 @@
 const { initKtuvitManager } = require("../clients/ktuvit");
+const config = require("config");
 const logger = require("../common/logger");
+
+const DETECTION_BYTES = config.get("bytesNeededForDetection");
 
 let ktuvit;
 const initSrtDownloader = async () => {
@@ -17,7 +20,9 @@ const downloadSrtFromKtuvit = (req, res) => {
   };
 
   try {
-    ktuvit.downloadSubtitle(titleKtuvitId, subKtuvitId, pipeFile);
+    ktuvit.downloadSubtitle(titleKtuvitId, subKtuvitId, pipeFile, {
+      bytesAmountForDetection: DETECTION_BYTES,
+    });
   } catch (err) {
     logger.error("Error downloading SRT file.", err, {
       ktuvitTitleID: titleKtuvitId,

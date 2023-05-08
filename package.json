@@ -1,6 +1,6 @@
 {
   "name": "ktuvit-stremio",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "An unofficial Stremio addon for ktuvit.me",
   "main": "index.js",
   "scripts": {
@@ -33,7 +33,7 @@
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "fastest-levenshtein": "^1.0.16",
-    "ktuvit-api": "^0.3.0",
+    "ktuvit-api": "^0.4.1",
     "winston": "^3.8.2"
   }
 }
