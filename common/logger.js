@@ -22,8 +22,12 @@ const logger = createLogger({
 });
 
 if (config.util.getEnv("NODE_ENV") !== "development")
-  logger.add(
-    new transports.File({ filename: "ktuvit.log", format: format.json() })
-  );
+  // Suspicious of this causing a "max file size exceeded" error
+  // so I'm disabling local logs on prod until remote logging feature is implemented
+
+  // logger.add(
+  //   new transports.File({ filename: "ktuvit.log", format: format.json() })
+  // );
+  return;
 
 module.exports = logger;
