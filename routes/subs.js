@@ -102,7 +102,7 @@ const formatSubs = (req, res) => {
         : formatSrtUrl(req.title.ktuvitID, ktuvitSub.id),
     });
 
-  sortSubsByFilename(stremioSubs, req.title.filename);
+  sortSubsByFilename(stremioSubs, req?.title?.filename);
   res.send(stremioSubs);
 };
 
