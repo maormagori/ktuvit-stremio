@@ -1,6 +1,7 @@
 name: Deploy addon to beamup
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - v*
