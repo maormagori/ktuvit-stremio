@@ -38,4 +38,8 @@ jobs:
           ssh dokku@a.baby-beamup.club config:set 4b139a4b7f94/ktuvit-stremio KTUVIT_USER_EMAIL="$KTUVIT_USER_EMAIL"
           ssh dokku@a.baby-beamup.club config:set 4b139a4b7f94/ktuvit-stremio KTUVIT_USER_HASHED_PASSWORD="$KTUVIT_USER_HASHED_PASSWORD"
       - name: Deploy addon to beamup
-        run: git push beamup HEAD:master --force
+        run: |
+          git config user.name "github-cd"
+          git config user.email "cd@github.com"
+          git commit --allow-empty -m "Beamup empty auto commit"
+          git push beamup HEAD:master --force
