@@ -1,7 +1,9 @@
 const { createLogger, format, transports } = require("winston");
 
-const customFormat = format.printf(({ level, message, timestamp }) => {
-  return `${timestamp} [${level}]: ${message}`;
+const customFormat = format.printf((info) => {
+  const { level, message, timestamp, stack, ...meta } = info;
+  const metaString = JSON.stringify(meta);
+  return `${timestamp} [${level}]: ${stack || message} ${metaString}`;
 });
 
 const logger = createLogger({
@@ -15,17 +17,9 @@ const logger = createLogger({
   ),
   transports: [
     new transports.Console({
-      format: format.combine(format.colorize(), customFormat),
+      format: customFormat,
     }),
   ],
 });
-
-// Suspicious of this causing a "max file size exceeded" error
-// so I'm disabling local logs on prod until remote logging feature is implemented
-
-// if (config.util.getEnv("NODE_ENV") !== "development")
-// logger.add(
-//   new transports.File({ filename: "ktuvit.log", format: format.json() })
-// );
 
 module.exports = logger;
