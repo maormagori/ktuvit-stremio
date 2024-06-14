@@ -9,6 +9,7 @@ const LOCAL_SERVER_ENCODER_URL = "http://127.0.0.1:11470/subtitles.vtt?from=";
 
 const initSubs = async () => {
   ktuvit = await initKtuvitManager();
+  logger.info("Done initializing subs.");
 };
 
 const exitEarlyWithEmptySubtitlesArray = (res) => {
@@ -21,7 +22,9 @@ const fetchSubsMiddleware = async (req, res, next) => {
     req.ktuvitSubs = ktuvitFetchedSubs;
     next();
   } catch (err) {
-    logger.error("Error occurred while fetching title subs from ktuvit: ", err);
+    logger.error(err, {
+      description: "Error occurred while fetching title subs from ktuvit",
+    });
     req.ktuvitSubs = [];
   }
 };
@@ -44,12 +47,13 @@ const extractTitleInfo = async (req, res, next) => {
       next();
     }
   } catch (err) {
-    logger.error("Unable to get title's ktuvit ID", {
+    logger.error(err, {
       type,
       imdbID,
       season,
       episode,
       extraArgs,
+      description: "Unable to get title's ktuvit ID",
     });
     exitEarlyWithEmptySubtitlesArray(res);
   }
@@ -92,7 +96,7 @@ const formatSubs = (req, res) => {
   // Definition for a Stremio sub file can found here: https://github.com/Stremio/stremio-addon-sdk/blob/master/docs/api/responses/subtitles.md
   const stremioSubs = { subtitles: [] };
 
-  for (const ktuvitSub of req.ktuvitSubs)
+  for (const ktuvitSub of req.ktuvitSubs) {
     stremioSubs.subtitles.push({
       // Sub's file name will serve as the ID as requested by users.
       id: `[KTUVIT]${ktuvitSub.subName}`,
@@ -101,6 +105,7 @@ const formatSubs = (req, res) => {
         ? LOCAL_SERVER_ENCODER_URL + formatSrtUrl(ktuvitSub.id)
         : formatSrtUrl(req.title.ktuvitID, ktuvitSub.id),
     });
+  }
 
   sortSubsByFilename(stremioSubs, req?.title?.filename);
   res.send(stremioSubs);

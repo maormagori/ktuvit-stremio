@@ -52,14 +52,17 @@ addon.get("/srt/:ktuvitId/:subId?.srt", downloadSrtFromKtuvit);
 async function init() {
   logger.info("Starting initialization.");
   try {
+    logger.info("Initializing Ktuvit manager.");
     await initKtuvitManager();
+    logger.info("Initializing subs.");
     await initSubs();
+    logger.info("Initializing srt downloader.");
     await initSrtDownloader();
     addon.listen(PORT, function () {
       logger.info(`Started addon on: ${HTTP}://${HOSTNAME}:${PORT}`);
     });
   } catch (err) {
-    logger.error("Failed starting the addon.", err);
+    logger.error(err, { description: "Error initializing addon." });
   }
 }
 
