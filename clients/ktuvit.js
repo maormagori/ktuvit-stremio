@@ -8,20 +8,17 @@ const KTUVIT_HASHED_PASS = config.get("ktuvit.hashedPassword");
 let ktuvit;
 
 const initKtuvitManager = async () => {
-  try {
-    if (ktuvit) {
-      return ktuvit;
-    }
-
-    const loginCookie = await ktuvitManager.getLoginCookie(
-      KTUVIT_EMAIL,
-      KTUVIT_HASHED_PASS
-    );
-
-    ktuvit = new ktuvitManager(loginCookie);
-  } catch (err) {
-    logger.error("Error initializing ktuvit manager:", err);
+  if (ktuvit) {
+    return ktuvit;
   }
+
+  const loginCookie = await ktuvitManager.getLoginCookie(
+    KTUVIT_EMAIL,
+    KTUVIT_HASHED_PASS
+  );
+
+  ktuvit = new ktuvitManager(loginCookie);
+  logger.info("Done initializing Ktuvit manager.");
 };
 
 module.exports = { initKtuvitManager };
