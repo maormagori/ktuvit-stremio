@@ -7,6 +7,7 @@ const DETECTION_BYTES = config.get("bytesNeededForDetection");
 let ktuvit;
 const initSrtDownloader = async () => {
   ktuvit = await initKtuvitManager();
+  logger.info("Done initializing srt downloader.");
 };
 
 const downloadSrtFromKtuvit = (req, res) => {
@@ -24,9 +25,10 @@ const downloadSrtFromKtuvit = (req, res) => {
       bytesAmountForDetection: DETECTION_BYTES,
     });
   } catch (err) {
-    logger.error("Error downloading SRT file.", err, {
+    logger.error(err, {
       ktuvitTitleID: titleKtuvitId,
       ktuvitSubID: subKtuvitId,
+      description: "Error downloading SRT file.",
     });
     res.status(500).send("Could not fetch SRT file.");
   }
