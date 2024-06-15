@@ -20,18 +20,18 @@ const downloadSrtFromKtuvit = (req, res) => {
     res.end(Buffer.from(fileBuffer));
   };
 
-  try {
-    ktuvit.downloadSubtitle(titleKtuvitId, subKtuvitId, pipeFile, {
+  ktuvit
+    .downloadSubtitle(titleKtuvitId, subKtuvitId, pipeFile, {
       bytesAmountForDetection: DETECTION_BYTES,
+    })
+    .catch((err) => {
+      logger.error(err, {
+        ktuvitTitleID: titleKtuvitId,
+        ktuvitSubID: subKtuvitId,
+        description: "Error downloading SRT file.",
+      });
+      res.status(500).send("Could not fetch SRT file.");
     });
-  } catch (err) {
-    logger.error(err, {
-      ktuvitTitleID: titleKtuvitId,
-      ktuvitSubID: subKtuvitId,
-      description: "Error downloading SRT file.",
-    });
-    res.status(500).send("Could not fetch SRT file.");
-  }
 };
 
 module.exports = { initSrtDownloader, downloadSrtFromKtuvit };

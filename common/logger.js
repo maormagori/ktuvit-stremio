@@ -2,7 +2,7 @@ const { createLogger, format, transports } = require("winston");
 
 const customFormat = format.printf((info) => {
   const { level, message, timestamp, stack, ...meta } = info;
-  const metaString = JSON.stringify(meta);
+  const metaString = Object.keys(meta).length ? JSON.stringify(meta) : "";
   return `${timestamp} [${level}]: ${stack || message} ${metaString}`;
 });
 
