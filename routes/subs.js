@@ -5,7 +5,9 @@ const config = require("config");
 const { distance } = require("fastest-levenshtein");
 
 let ktuvit;
+
 const LOCAL_SERVER_ENCODER_URL = "http://127.0.0.1:11470/subtitles.vtt?from=";
+const imdbIDRegex = /^tt\d{7,9}$/;
 
 const initSubs = async () => {
   ktuvit = await initKtuvitManager();
@@ -32,6 +34,13 @@ const fetchSubsMiddleware = async (req, res, next) => {
 const extractTitleInfo = async (req, res, next) => {
   const type = req.params.type;
   const [imdbID, season, episode] = deconstructImdbId(req.params.imdbId);
+
+  if (!imdbIDRegex.test(imdbID)) {
+    logger.warn("Invalid imdb ID", { imdbID });
+    exitEarlyWithEmptySubtitlesArray(res);
+    return;
+  }
+
   const extraArgs = extractExtraArgs(req.params?.query);
 
   try {
@@ -79,9 +88,9 @@ const extractExtraArgs = (query) => {
 const fetchSubsFromKtuvit = async (title) => {
   switch (title.type) {
     case type.MOVIE:
-      return await ktuvit.getSubsIDsListMovie(title.ktuvitID);
+      return ktuvit.getSubsIDsListMovie(title.ktuvitID);
     case type.SERIES:
-      return await ktuvit.getSubsIDsListEpisode(
+      return ktuvit.getSubsIDsListEpisode(
         title.ktuvitID,
         title.season,
         title.episode
