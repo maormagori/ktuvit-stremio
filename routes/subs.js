@@ -26,8 +26,10 @@ const fetchSubsMiddleware = async (req, res, next) => {
   } catch (err) {
     logger.error(err, {
       description: "Error occurred while fetching title subs from ktuvit",
+      title: JSON.stringify(req.title || {}),
     });
     req.ktuvitSubs = [];
+    next();
   }
 };
 
@@ -36,7 +38,7 @@ const extractTitleInfo = async (req, res, next) => {
   const [imdbID, season, episode] = deconstructImdbId(req.params.imdbId);
 
   if (!imdbIDRegex.test(imdbID)) {
-    logger.warn("Invalid imdb ID", { imdbID });
+    logger.info("Invalid imdb ID", { imdbID });
     exitEarlyWithEmptySubtitlesArray(res);
     return;
   }
