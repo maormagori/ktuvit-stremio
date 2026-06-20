@@ -4,7 +4,7 @@
   "description": "An unofficial Stremio addon for ktuvit.me",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "KTUVIT_USER_EMAIL=test KTUVIT_USER_HASHED_PASSWORD=test mocha 'test/**/*.spec.js'",
     "start": "node index.js",
     "devStart": "nodemon index.js"
   },
@@ -25,15 +25,18 @@
     "eslint": "^8.38.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-prettier": "^4.2.1",
-    "prettier": "2.8.7"
+    "mocha": "^11.7.6",
+    "prettier": "2.8.7",
+    "proxyquire": "^2.1.3",
+    "sinon": "^22.0.0"
   },
   "dependencies": {
-    "config": "^3.3.9",
+    "config": "^4.4.1",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.21.2",
     "fastest-levenshtein": "^1.0.16",
-    "ktuvit-api": "^0.4.1",
+    "ktuvit-api": "^0.4.2",
     "winston": "^3.8.2"
   }
 }

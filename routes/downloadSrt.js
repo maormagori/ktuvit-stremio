@@ -11,7 +11,7 @@ const initSrtDownloader = async () => {
 };
 
 const downloadSrtFromKtuvit = (req, res) => {
-  res.setHeader("Content-Type", "application/octet-stream; charset=utf-8");
+  res.setHeader("Content-Type", "application/x-subrip; charset=utf-8");
 
   const titleKtuvitId = req.params?.ktuvitId;
   const subKtuvitId = req.params?.subId;
