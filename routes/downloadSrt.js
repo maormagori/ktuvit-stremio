@@ -4,6 +4,11 @@ const logger = require("../common/logger");
 
 const DETECTION_BYTES = config.get("bytesNeededForDetection");
 
+// Ktuvit sometimes returns an error message (e.g. an expired download
+// identifier) with a 200 status instead of actual subtitle content. Requiring
+// a timestamp line catches that case regardless of the exact wording.
+const SRT_TIMESTAMP_PATTERN = /\d{2}:\d{2}:\d{2},\d{3}\s*-->\s*\d{2}:\d{2}:\d{2},\d{3}/;
+
 let ktuvit;
 const initSrtDownloader = async () => {
   ktuvit = await initKtuvitManager();
@@ -11,27 +16,36 @@ const initSrtDownloader = async () => {
 };
 
 const downloadSrtFromKtuvit = (req, res) => {
-  res.setHeader("Content-Type", "application/x-subrip; charset=utf-8");
-
   const titleKtuvitId = req.params?.ktuvitId;
   const subKtuvitId = req.params?.subId;
 
-  const pipeFile = (fileBuffer) => {
-    res.end(Buffer.from(fileBuffer));
+  const respondWithError = (err, description) => {
+    logger.error(err || new Error(description), {
+      ktuvitTitleID: titleKtuvitId,
+      ktuvitSubID: subKtuvitId,
+      description,
+    });
+    // Never let a failed fetch be cached (by Cloudflare or anyone else) as if
+    // it were a valid subtitle file.
+    res.setHeader("Cache-Control", "no-store");
+    res.status(502).send("Could not fetch SRT file.");
+  };
+
+  const pipeFile = (fileContent, err) => {
+    if (err || !SRT_TIMESTAMP_PATTERN.test(fileContent || "")) {
+      respondWithError(err, "Ktuvit did not return a valid SRT file.");
+      return;
+    }
+
+    res.setHeader("Content-Type", "application/x-subrip; charset=utf-8");
+    res.end(Buffer.from(fileContent));
   };
 
   ktuvit
     .downloadSubtitle(titleKtuvitId, subKtuvitId, pipeFile, {
       bytesAmountForDetection: DETECTION_BYTES,
     })
-    .catch((err) => {
-      logger.error(err, {
-        ktuvitTitleID: titleKtuvitId,
-        ktuvitSubID: subKtuvitId,
-        description: "Error downloading SRT file.",
-      });
-      res.status(500).send("Could not fetch SRT file.");
-    });
+    .catch((err) => respondWithError(err, "Error downloading SRT file."));
 };
 
 module.exports = { initSrtDownloader, downloadSrtFromKtuvit };
