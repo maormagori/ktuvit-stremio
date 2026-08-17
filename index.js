@@ -1,5 +1,6 @@
 require("dotenv").config();
 const logger = require("./common/logger");
+const { httpLogger } = require("./common/httpLogger");
 const config = require("config");
 const express = require("express");
 const cors = require("cors");
@@ -23,6 +24,7 @@ const HOSTNAME = config.get("HOSTNAME");
 
 const addon = express();
 addon.use(cors());
+addon.use(httpLogger);
 
 const respondWithHeaders = function (req, res, next) {
   res.setHeader("Access-Control-Allow-Origin", "*");
