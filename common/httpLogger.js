@@ -10,4 +10,4 @@ const httpLogger = morgan(HTTP_LOG_FORMAT, {
   stream: { write: writeToLogger },
 });
 
-module.exports = { httpLogger, HTTP_LOG_FORMAT, writeToLogger };
+module.exports = { httpLogger, writeToLogger };
