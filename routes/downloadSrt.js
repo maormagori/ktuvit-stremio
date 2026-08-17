@@ -37,9 +37,21 @@ const downloadSrtFromKtuvit = (req, res) => {
       return;
     }
 
+    logger.debug("Serving SRT file.", {
+      ktuvitTitleID: titleKtuvitId,
+      ktuvitSubID: subKtuvitId,
+      bytes: Buffer.byteLength(fileContent),
+    });
+
     res.setHeader("Content-Type", "application/x-subrip; charset=utf-8");
     res.end(Buffer.from(fileContent));
   };
+
+  logger.info("Requesting subtitle download from Ktuvit.", {
+    ktuvitTitleID: titleKtuvitId,
+    ktuvitSubID: subKtuvitId,
+    bytesAmountForDetection: DETECTION_BYTES,
+  });
 
   ktuvit
     .downloadSubtitle(titleKtuvitId, subKtuvitId, pipeFile, {
