@@ -1,4 +1,5 @@
 const { createLogger, format, transports } = require("winston");
+const config = require("config");
 
 const customFormat = format.printf((info) => {
   const { level, message, timestamp, stack, ...meta } = info;
@@ -7,7 +8,7 @@ const customFormat = format.printf((info) => {
 });
 
 const logger = createLogger({
-  level: "info",
+  level: config.get("logLevel"),
   format: format.combine(
     format.timestamp({
       format: "DD-MM-YYYY HH:mm:ss",
