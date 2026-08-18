@@ -37,6 +37,7 @@
     "express": "^4.21.2",
     "fastest-levenshtein": "^1.0.16",
     "ktuvit-api": "^0.4.3",
+    "lru-cache": "^10.4.3",
     "winston": "^3.8.2"
   }
 }
