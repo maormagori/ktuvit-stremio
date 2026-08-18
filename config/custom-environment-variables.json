@@ -5,5 +5,10 @@
     "hashedPassword": "KTUVIT_USER_HASHED_PASSWORD"
   },
   "PORT": "PORT",
-  "bytesNeededForDetection": "DETECTION_BYTES"
+  "bytesNeededForDetection": "DETECTION_BYTES",
+  "subsCache": {
+    "maxEntries": "SUBS_CACHE_MAX_ENTRIES",
+    "foundTtlMs": "SUBS_CACHE_FOUND_TTL_MS",
+    "emptyTtlMs": "SUBS_CACHE_EMPTY_TTL_MS"
+  }
 }
