@@ -1,5 +1,6 @@
 const { initKtuvitManager } = require("../clients/ktuvit");
 const { type } = require("../common/ktuvitEnums");
+const { getOrFetch } = require("../common/subsCache");
 const logger = require("../common/logger");
 const config = require("config");
 const { distance } = require("fastest-levenshtein");
@@ -20,7 +21,9 @@ const exitEarlyWithEmptySubtitlesArray = (res) => {
 
 const fetchSubsMiddleware = async (req, res, next) => {
   try {
-    const ktuvitFetchedSubs = await fetchSubsFromKtuvit(req.title);
+    const ktuvitFetchedSubs = await getOrFetch(req.title, () =>
+      fetchSubsFromKtuvit(req.title)
+    );
     req.ktuvitSubs = ktuvitFetchedSubs;
     next();
   } catch (err) {
