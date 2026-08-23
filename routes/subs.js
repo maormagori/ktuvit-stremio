@@ -21,9 +21,18 @@ const exitEarlyWithEmptySubtitlesArray = (res) => {
 
 const fetchSubsMiddleware = async (req, res, next) => {
   try {
-    const ktuvitFetchedSubs = await getOrFetch(req.title, () =>
-      fetchSubsFromKtuvit(req.title)
-    );
+    // The log sits inside the callback rather than around getOrFetch so that it
+    // only fires when Ktuvit was actually asked. A cached list never reaches
+    // here, and a line claiming a fetch that did not happen would make the log
+    // useless for telling whether the cache is doing its job.
+    const ktuvitFetchedSubs = await getOrFetch(req.title, async () => {
+      const subs = await fetchSubsFromKtuvit(req.title);
+      logger.debug("Fetched title subs from Ktuvit.", {
+        ktuvitID: req.title?.ktuvitID,
+        subsFound: subs?.length ?? 0,
+      });
+      return subs;
+    });
     req.ktuvitSubs = ktuvitFetchedSubs;
     next();
   } catch (err) {
@@ -49,10 +58,17 @@ const extractTitleInfo = async (req, res, next) => {
   const extraArgs = extractExtraArgs(req.params?.query);
 
   try {
+    logger.info("Requesting title's Ktuvit ID.", {
+      type,
+      imdbId: imdbID,
+      season,
+      episode,
+    });
     const ktuvitID = await ktuvit.getKtuvitID({
       type: type,
       imdbId: imdbID,
     });
+    logger.debug("Received title's Ktuvit ID.", { imdbID, ktuvitID });
 
     if (!ktuvitID) {
       exitEarlyWithEmptySubtitlesArray(res);
@@ -93,8 +109,16 @@ const extractExtraArgs = (query) => {
 const fetchSubsFromKtuvit = async (title) => {
   switch (title.type) {
     case type.MOVIE:
+      logger.info("Requesting movie's subs list from Ktuvit.", {
+        ktuvitID: title.ktuvitID,
+      });
       return ktuvit.getSubsIDsListMovie(title.ktuvitID);
     case type.SERIES:
+      logger.info("Requesting episode's subs list from Ktuvit.", {
+        ktuvitID: title.ktuvitID,
+        season: title.season,
+        episode: title.episode,
+      });
       return ktuvit.getSubsIDsListEpisode(
         title.ktuvitID,
         title.season,

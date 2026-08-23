@@ -5,6 +5,7 @@
     "hashedPassword": "KTUVIT_USER_HASHED_PASSWORD"
   },
   "PORT": "PORT",
+  "logLevel": "LOG_LEVEL",
   "bytesNeededForDetection": "DETECTION_BYTES",
   "subsCache": {
     "maxEntries": "SUBS_CACHE_MAX_ENTRIES",
