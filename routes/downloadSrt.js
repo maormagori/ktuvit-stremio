@@ -7,7 +7,8 @@ const DETECTION_BYTES = config.get("bytesNeededForDetection");
 // Ktuvit sometimes returns an error message (e.g. an expired download
 // identifier) with a 200 status instead of actual subtitle content. Requiring
 // a timestamp line catches that case regardless of the exact wording.
-const SRT_TIMESTAMP_PATTERN = /\d{2}:\d{2}:\d{2},\d{3}\s*-->\s*\d{2}:\d{2}:\d{2},\d{3}/;
+const SRT_TIMESTAMP_PATTERN =
+  /\d{2}:\d{2}:\d{2},\d{3}\s*-->\s*\d{2}:\d{2}:\d{2},\d{3}/;
 
 let ktuvit;
 const initSrtDownloader = async () => {

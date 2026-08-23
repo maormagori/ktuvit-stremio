@@ -2,8 +2,7 @@ const assert = require("assert");
 const sinon = require("sinon");
 const proxyquire = require("proxyquire").noCallThru();
 
-const srtWithText = (text) =>
-  `1\n00:00:01,000 --> 00:00:04,000\n${text}\n`;
+const srtWithText = (text) => `1\n00:00:01,000 --> 00:00:04,000\n${text}\n`;
 
 const HEBREW_TEXT = "שלום עולם\nThis is a Hebrew subtitle line.";
 const KTUVIT_ERROR_MESSAGE = "הבקשה לא נמצאה, נא לנסות להוריד את הקובץ בשנית";
@@ -95,7 +94,10 @@ describe("downloadSrtFromKtuvit", function () {
     downloadSrtFromKtuvit(req, res);
 
     assert.ok(
-      res.setHeader.calledWith("Content-Type", "application/x-subrip; charset=utf-8")
+      res.setHeader.calledWith(
+        "Content-Type",
+        "application/x-subrip; charset=utf-8"
+      )
     );
   });
 
@@ -114,7 +116,10 @@ describe("downloadSrtFromKtuvit", function () {
     assert.ok(res.setHeader.calledWith("Cache-Control", "no-store"));
     assert.ok(res.status.calledWith(502));
     assert.ok(res.send.called);
-    assert.ok(res.end.notCalled, "Invalid content should never be sent as the response body");
+    assert.ok(
+      res.end.notCalled,
+      "Invalid content should never be sent as the response body"
+    );
   });
 
   it("should reject with a non-cacheable error when the download callback reports an error", function () {

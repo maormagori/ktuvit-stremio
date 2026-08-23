@@ -132,7 +132,8 @@ const formatSubs = (req, res) => {
       id: `[KTUVIT]${ktuvitSub.subName}`,
       lang: "heb",
       url: config.get("enableLocalServerEncoding")
-        ? LOCAL_SERVER_ENCODER_URL + formatSrtUrl(req.title.ktuvitID, ktuvitSub.id)
+        ? LOCAL_SERVER_ENCODER_URL +
+          formatSrtUrl(req.title.ktuvitID, ktuvitSub.id)
         : formatSrtUrl(req.title.ktuvitID, ktuvitSub.id),
     });
   }
