@@ -45,6 +45,13 @@ const release = (title, filename, videoHash, videoSize) => ({
 const countingFetch = (subs = SUBS) =>
   sinon.stub().callsFake(async () => [...subs]);
 
+// lru-cache resolves its clock at require time, so a test that installs a fake
+// one has to make it load again afterwards. Only the expiry suite needs this.
+const forgetLruCache = () =>
+  Object.keys(require.cache)
+    .filter((file) => file.includes("lru-cache"))
+    .forEach((file) => delete require.cache[file]);
+
 const loadCache = (overrides = {}) => {
   const values = {
     "subsCache.maxEntries": 500,
@@ -297,11 +304,26 @@ describe("subsCache getOrFetch expiry", function () {
 
   beforeEach(function () {
     clock = sinon.useFakeTimers();
+    // lru-cache reads the clock through the global performance object, which
+    // it captures once when it is first required. sinon replaces that object
+    // rather than patching it, so a copy loaded before the fake clock went in
+    // keeps reading the real one and never sees a tick. Drop it from the
+    // require cache so the copy subsCache loads here reads the fake clock.
+    forgetLruCache();
+    // lru-cache stores the time an entry was cached and treats a zero
+    // timestamp as "no expiry set". The fake clock starts performance.now() at
+    // zero, so move it off zero before anything is cached, or every entry
+    // would look permanently fresh.
+    clock.tick(1);
     ({ getOrFetch } = loadCache());
   });
 
   afterEach(function () {
     clock.restore();
+    // The copy loaded above is holding the fake performance object, which stops
+    // advancing once the clock is restored. Drop it again so whatever loads
+    // lru-cache next starts from the real clock.
+    forgetLruCache();
   });
 
   it("should keep a found list for the whole found ttl", async function () {
