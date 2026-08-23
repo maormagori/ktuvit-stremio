@@ -11,11 +11,25 @@ describe("downloadSrtFromKtuvit", function () {
   let downloadSrtFromKtuvit;
   let initSrtDownloader;
   let mockKtuvit;
+  let mockLogger;
   let res;
+
+  const everythingLogged = () =>
+    JSON.stringify([
+      mockLogger.info.args,
+      mockLogger.debug.args,
+      mockLogger.error.args,
+    ]);
 
   beforeEach(async function () {
     mockKtuvit = {
       downloadSubtitle: sinon.stub(),
+    };
+
+    mockLogger = {
+      info: sinon.spy(),
+      debug: sinon.spy(),
+      error: sinon.spy(),
     };
 
     ({ initSrtDownloader, downloadSrtFromKtuvit } = proxyquire(
@@ -24,6 +38,7 @@ describe("downloadSrtFromKtuvit", function () {
         "../clients/ktuvit": {
           initKtuvitManager: async () => mockKtuvit,
         },
+        "../common/logger": mockLogger,
       }
     ));
 
@@ -135,5 +150,86 @@ describe("downloadSrtFromKtuvit", function () {
     assert.ok(res.setHeader.calledWith("Cache-Control", "no-store"));
     assert.ok(res.status.calledWith(502));
     assert.ok(res.end.notCalled);
+  });
+
+  it("should log the arguments passed to the Ktuvit manager", function () {
+    mockKtuvit.downloadSubtitle.callsFake((titleId, subId, cb) => {
+      cb(srtWithText(HEBREW_TEXT));
+      return Promise.resolve();
+    });
+
+    const req = { params: { ktuvitId: "TITLE123", subId: "SUB456" } };
+    downloadSrtFromKtuvit(req, res);
+
+    const infoLogged = JSON.stringify(mockLogger.info.args);
+    for (const argument of ["TITLE123", "SUB456", "bytesAmountForDetection"]) {
+      assert.ok(
+        infoLogged.includes(argument),
+        `${argument} should be logged at the info level, got: ${infoLogged}`
+      );
+    }
+  });
+
+  it("should log the served response's size at the debug level, not its content", function () {
+    const srt = srtWithText(HEBREW_TEXT);
+    mockKtuvit.downloadSubtitle.callsFake((titleId, subId, cb) => {
+      cb(srt);
+      return Promise.resolve();
+    });
+
+    const req = { params: { ktuvitId: "TITLE123", subId: "SUB456" } };
+    downloadSrtFromKtuvit(req, res);
+
+    const debugLogged = JSON.stringify(mockLogger.debug.args);
+
+    assert.ok(
+      debugLogged.includes(`"bytes":${Buffer.byteLength(srt)}`),
+      `Served size should be logged at the debug level, got: ${debugLogged}`
+    );
+
+    for (const subtitleLine of HEBREW_TEXT.split("\n")) {
+      assert.ok(
+        !debugLogged.includes(subtitleLine),
+        `Subtitle content should never be logged, found: ${subtitleLine}`
+      );
+    }
+  });
+
+  it("should log the request but never the SRT payload", function () {
+    mockKtuvit.downloadSubtitle.callsFake((titleId, subId, cb) => {
+      cb(srtWithText(HEBREW_TEXT));
+      return Promise.resolve();
+    });
+
+    const req = { params: { ktuvitId: "TITLE123", subId: "SUB456" } };
+    downloadSrtFromKtuvit(req, res);
+
+    const logged = everythingLogged();
+    for (const subtitleLine of HEBREW_TEXT.split("\n")) {
+      assert.ok(
+        !logged.includes(subtitleLine),
+        `Subtitle content should never be logged, found: ${subtitleLine}`
+      );
+    }
+  });
+
+  it("should not log the payload of an invalid SRT response either", function () {
+    mockKtuvit.downloadSubtitle.callsFake((titleId, subId, cb) => {
+      cb(KTUVIT_ERROR_MESSAGE);
+      return Promise.resolve();
+    });
+
+    const req = { params: { ktuvitId: "TITLE123", subId: "SUB456" } };
+    downloadSrtFromKtuvit(req, res);
+
+    const logged = everythingLogged();
+    assert.ok(
+      !logged.includes(KTUVIT_ERROR_MESSAGE),
+      "Ktuvit's response body should never be logged"
+    );
+    assert.ok(
+      mockLogger.error.called,
+      "The failure itself should still be logged"
+    );
   });
 });

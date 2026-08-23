@@ -4,5 +4,6 @@
   "HOSTNAME": "localhost",
   "addonAuthorEmail": "maor@magori.online",
   "enableLocalServerEncoding": false,
+  "logLevel": "http",
   "bytesNeededForDetection": 256
 }

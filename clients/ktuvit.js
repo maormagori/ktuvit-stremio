@@ -13,6 +13,7 @@ const initKtuvitManager = async () => {
     return ktuvit;
   }
 
+  logger.info("Requesting a login cookie from Ktuvit.");
   const loginCookie = await ktuvitManager.getLoginCookie(
     KTUVIT_EMAIL,
     KTUVIT_HASHED_PASS
