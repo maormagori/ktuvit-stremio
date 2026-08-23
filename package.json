@@ -3,8 +3,13 @@
   "version": "0.1.2",
   "description": "An unofficial Stremio addon for ktuvit.me",
   "main": "index.js",
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "test": "KTUVIT_USER_EMAIL=test KTUVIT_USER_HASHED_PASSWORD=test mocha 'test/**/*.spec.js'",
+    "lint": "eslint .",
+    "fix": "npm run lint -- --fix",
     "start": "node index.js",
     "devStart": "nodemon index.js"
   },
