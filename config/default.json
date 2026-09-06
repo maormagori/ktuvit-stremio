@@ -5,5 +5,10 @@
   "addonAuthorEmail": "maor@magori.online",
   "enableLocalServerEncoding": false,
   "logLevel": "http",
-  "bytesNeededForDetection": 256
+  "bytesNeededForDetection": 256,
+  "subsCache": {
+    "maxEntries": 500,
+    "foundTtlMs": 3600000,
+    "emptyTtlMs": 300000
+  }
 }

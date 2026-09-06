@@ -53,6 +53,9 @@ You can also add these env variables to alter the way the addon behaves:
 AUTHOR_EMAIL  # The email displayed in the addon's manifest
 PORT   # The port the addon listens on. defaults to 3000
 LOG_LEVEL   # The minimum winston level to log. defaults to http
+SUBS_CACHE_MAX_ENTRIES    # How many titles to keep cached. defaults to 500
+SUBS_CACHE_FOUND_TTL_MS   # How long to keep a subtitles list. defaults to 3600000 (1 hour)
+SUBS_CACHE_EMPTY_TTL_MS   # How long to keep an empty result. defaults to 300000 (5 minutes)
 ```
 
 #### Logging
@@ -68,7 +71,22 @@ itself plus its status, never the contents of the SRT file.
 | --- | --- |
 | `info` | Ktuvit calls and errors, no request logs |
 | `http` (default) | The above, plus a line per request |
-| `debug` | The above, plus the results of each Ktuvit call |
+| `debug` | The above, plus the results of each Ktuvit call and every cache hit and miss |
+
+#### Caching
+
+Stremio appends the video's filename, hash and size to every subtitles request,
+so no two viewers of the same episode send the same URL and route based caching
+never helps. The addon therefore caches subtitles lists itself, keyed on the
+title rather than the URL: every release of one episode shares a single entry
+and each request is still sorted against its own filename.
+
+An empty result is kept only briefly, since it usually means the subtitles are
+not up yet rather than that the title will never have any. Failed requests are
+never cached. The cache is per process, so it starts empty after a restart.
+
+Because a cached list never reaches Ktuvit, the `info` line for a subs lookup
+appears only on a miss. Set `LOG_LEVEL=debug` to see hits as well.
 # Contributing
 PRs are more than welcome!
 Take a look at the currently open [issues](https://github.com/maormagori/ktuvit-stremio/issues) to see where you can help. If you're experiencing issues with the addon, be sure to open an issue.

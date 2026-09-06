@@ -1,5 +1,6 @@
 const { initKtuvitManager } = require("../clients/ktuvit");
 const { type } = require("../common/ktuvitEnums");
+const { getOrFetch } = require("../common/subsCache");
 const logger = require("../common/logger");
 const config = require("config");
 const { distance } = require("fastest-levenshtein");
@@ -20,10 +21,17 @@ const exitEarlyWithEmptySubtitlesArray = (res) => {
 
 const fetchSubsMiddleware = async (req, res, next) => {
   try {
-    const ktuvitFetchedSubs = await fetchSubsFromKtuvit(req.title);
-    logger.debug("Fetched title subs from Ktuvit.", {
-      ktuvitID: req.title?.ktuvitID,
-      subsFound: ktuvitFetchedSubs?.length ?? 0,
+    // The log sits inside the callback rather than around getOrFetch so that it
+    // only fires when Ktuvit was actually asked. A cached list never reaches
+    // here, and a line claiming a fetch that did not happen would make the log
+    // useless for telling whether the cache is doing its job.
+    const ktuvitFetchedSubs = await getOrFetch(req.title, async () => {
+      const subs = await fetchSubsFromKtuvit(req.title);
+      logger.debug("Fetched title subs from Ktuvit.", {
+        ktuvitID: req.title?.ktuvitID,
+        subsFound: subs?.length ?? 0,
+      });
+      return subs;
     });
     req.ktuvitSubs = ktuvitFetchedSubs;
     next();

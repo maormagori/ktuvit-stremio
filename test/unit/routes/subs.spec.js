@@ -55,3 +55,93 @@ describe("formatSubs", function () {
     assert.deepStrictEqual(subtitles, []);
   });
 });
+
+describe("fetchSubsMiddleware", function () {
+  const proxyquire = require("proxyquire").noCallThru();
+
+  const SUBS = [{ id: "SUB1", subName: "Freies.Land.2019.DVDRIP.avi.srt" }];
+
+  const titleFor = (filename) => ({
+    type: "movie",
+    imdbID: "tt9407490",
+    season: undefined,
+    episode: undefined,
+    ktuvitID: "KT9407490",
+    filename,
+  });
+
+  let fetchSubsMiddleware;
+  let getSubsIDsListMovie;
+
+  beforeEach(async function () {
+    getSubsIDsListMovie = sinon.stub().callsFake(async () => [...SUBS]);
+
+    const subs = proxyquire("../../../routes/subs", {
+      "../clients/ktuvit": {
+        initKtuvitManager: async () => ({ getSubsIDsListMovie }),
+      },
+      "../common/logger": {
+        debug: sinon.spy(),
+        info: sinon.spy(),
+        error: sinon.spy(),
+      },
+      "../common/subsCache": proxyquire("../../../common/subsCache", {
+        config: {
+          get: (key) =>
+            ({
+              "subsCache.maxEntries": 500,
+              "subsCache.foundTtlMs": 60000,
+              "subsCache.emptyTtlMs": 5000,
+            }[key]),
+        },
+        "./logger": {
+          debug: sinon.spy(),
+          info: sinon.spy(),
+          error: sinon.spy(),
+        },
+      }),
+    });
+
+    ({ fetchSubsMiddleware } = subs);
+    await subs.initSubs();
+  });
+
+  const callWith = async (filename) => {
+    const req = { title: titleFor(filename) };
+    await fetchSubsMiddleware(req, { send: sinon.spy() }, () => {});
+    return req;
+  };
+
+  it("should ask Ktuvit once for two viewers watching different releases", async function () {
+    await callWith("Freies.Land.2019.D.BDRip.1.46Gb.MegaPeer.avi");
+    await callWith("Freies.Land.2019.DVDRIP.MegaPeer.avi");
+
+    assert.strictEqual(
+      getSubsIDsListMovie.callCount,
+      1,
+      "The second viewer should have been served from the cache"
+    );
+  });
+
+  it("should still put the subs on the request when they come from the cache", async function () {
+    await callWith("Freies.Land.2019.D.BDRip.avi");
+    const second = await callWith("Freies.Land.2019.DVDRIP.avi");
+
+    assert.deepStrictEqual(second.ktuvitSubs, SUBS);
+  });
+
+  it("should fall back to an empty list when Ktuvit fails, without caching it", async function () {
+    getSubsIDsListMovie.onFirstCall().rejects(new Error("ktuvit is down"));
+
+    const failed = await callWith("Freies.Land.2019.D.BDRip.avi");
+    assert.deepStrictEqual(failed.ktuvitSubs, []);
+
+    const retried = await callWith("Freies.Land.2019.DVDRIP.avi");
+    assert.deepStrictEqual(retried.ktuvitSubs, SUBS);
+    assert.strictEqual(
+      getSubsIDsListMovie.callCount,
+      2,
+      "A failure must not be cached as this title's subtitles"
+    );
+  });
+});
