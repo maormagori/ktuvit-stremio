@@ -157,7 +157,9 @@ const formatSrtUrl = (ktuvitTitleId, ktuvitSubId) => {
 
   // Production deployment is behind a proxy so I remove the useless port.
   const PRODUCTION = config.util.getEnv("NODE_ENV") === "production";
-  const addonUrl = `${HTTP}://${HOSTNAME}${PRODUCTION ? "" : `:${PORT}`}`;
+  const addonUrl =
+    config.get("publicUrl").replace(/\/+$/, "") ||
+    `${HTTP}://${HOSTNAME}${PRODUCTION ? "" : `:${PORT}`}`;
 
   const finalSrtRoute = `${addonUrl}/srt/${ktuvitTitleId}/${ktuvitSubId}.srt`;
 

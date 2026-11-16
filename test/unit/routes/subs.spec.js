@@ -1,5 +1,6 @@
 const assert = require("assert");
 const sinon = require("sinon");
+const proxyquire = require("proxyquire").noCallThru();
 const { formatSubs } = require("../../../routes/subs");
 
 const LOCAL_SERVER_PREFIX = "http://127.0.0.1:11470/subtitles.vtt?from=";
@@ -56,9 +57,66 @@ describe("formatSubs", function () {
   });
 });
 
-describe("fetchSubsMiddleware", function () {
-  const proxyquire = require("proxyquire").noCallThru();
+describe("subtitle URLs", function () {
+  const cases = [
+    {
+      name: "use the local host and port by default",
+      publicUrl: "",
+      env: "development",
+      expected: "http://localhost:3000",
+    },
+    {
+      name: "preserve production URLs without the internal port",
+      publicUrl: "",
+      env: "production",
+      expected: "https://addon.example",
+    },
+    {
+      name: "use an external HTTPS origin without the internal port",
+      publicUrl: "https://pi.tailnet.ts.net",
+      env: "development",
+      expected: "https://pi.tailnet.ts.net",
+    },
+    {
+      name: "remove trailing slashes from the external URL",
+      publicUrl: "https://pi.tailnet.ts.net/",
+      env: "development",
+      expected: "https://pi.tailnet.ts.net",
+    },
+  ];
 
+  for (const { name, publicUrl, env, expected } of cases) {
+    it(`should ${name}`, function () {
+      const values = {
+        publicUrl,
+        PORT: 3000,
+        HOSTNAME: env === "production" ? "addon.example" : "localhost",
+        ssl: env === "production",
+        enableLocalServerEncoding: false,
+      };
+      const { formatSubs } = proxyquire("../../../routes/subs", {
+        config: {
+          get: (key) => values[key],
+          util: { getEnv: () => env },
+        },
+      });
+      const req = {
+        ktuvitSubs: [{ id: "SUB123", subName: "My.Subtitle.srt" }],
+        title: { ktuvitID: "TITLE456" },
+      };
+      const res = { send: sinon.spy() };
+
+      formatSubs(req, res);
+
+      assert.strictEqual(
+        res.send.firstCall.args[0].subtitles[0].url,
+        `${expected}/srt/TITLE456/SUB123.srt`
+      );
+    });
+  }
+});
+
+describe("fetchSubsMiddleware", function () {
   const SUBS = [{ id: "SUB1", subName: "Freies.Land.2019.DVDRIP.avi.srt" }];
 
   const titleFor = (filename) => ({
