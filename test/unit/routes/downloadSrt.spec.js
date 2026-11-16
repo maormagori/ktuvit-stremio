@@ -37,6 +37,7 @@ describe("downloadSrtFromKtuvit", function () {
       {
         "../clients/ktuvit": {
           initKtuvitManager: async () => mockKtuvit,
+          invalidateKtuvitManager: sinon.spy(),
         },
         "../common/logger": mockLogger,
       }
@@ -149,6 +150,34 @@ describe("downloadSrtFromKtuvit", function () {
 
     assert.ok(res.setHeader.calledWith("Cache-Control", "no-store"));
     assert.ok(res.status.calledWith(502));
+    assert.ok(res.end.notCalled);
+  });
+
+  it("handles synchronous downloader failures without exposing their content", function () {
+    mockKtuvit.downloadSubtitle.throws(new Error("SECRET_CREDENTIAL"));
+    downloadSrtFromKtuvit({ params: {} }, res);
+    assert.ok(res.status.calledWith(502));
+    assert.ok(!everythingLogged().includes("SECRET_CREDENTIAL"));
+  });
+
+  it("does not send a second response when a download rejects after its callback", async function () {
+    mockKtuvit.downloadSubtitle.callsFake((title, sub, cb) => {
+      cb(srtWithText(HEBREW_TEXT));
+      return Promise.reject(new Error("late failure"));
+    });
+    downloadSrtFromKtuvit({ params: {} }, res);
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.ok(res.end.calledOnce);
+    assert.ok(res.send.notCalled);
+  });
+
+  it("does not send a second response for repeated callbacks", function () {
+    mockKtuvit.downloadSubtitle.callsFake((title, sub, cb) => {
+      cb(null, new Error("failed"));
+      cb(srtWithText(HEBREW_TEXT));
+    });
+    downloadSrtFromKtuvit({ params: {} }, res);
+    assert.ok(res.send.calledOnce);
     assert.ok(res.end.notCalled);
   });
 

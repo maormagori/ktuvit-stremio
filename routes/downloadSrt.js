@@ -1,4 +1,7 @@
-const { initKtuvitManager } = require("../clients/ktuvit");
+const {
+  initKtuvitManager,
+  invalidateKtuvitManager,
+} = require("../clients/ktuvit");
 const config = require("config");
 const logger = require("../common/logger");
 
@@ -11,8 +14,8 @@ const SRT_TIMESTAMP_PATTERN =
   /\d{2}:\d{2}:\d{2},\d{3}\s*-->\s*\d{2}:\d{2}:\d{2},\d{3}/;
 
 let ktuvit;
-const initSrtDownloader = async () => {
-  ktuvit = await initKtuvitManager();
+const initSrtDownloader = async (manager) => {
+  ktuvit = manager || (await initKtuvitManager());
   logger.info("Done initializing srt downloader.");
 };
 
@@ -20,8 +23,15 @@ const downloadSrtFromKtuvit = (req, res) => {
   const titleKtuvitId = req.params?.ktuvitId;
   const subKtuvitId = req.params?.subId;
 
+  const manager = req.ktuvitManager || ktuvit;
+  let responded = false;
   const respondWithError = (err, description) => {
-    logger.error(err || new Error(description), {
+    invalidateKtuvitManager(err, manager);
+    if (responded || res.headersSent) {
+      return;
+    }
+    responded = true;
+    logger.error(description, {
       ktuvitTitleID: titleKtuvitId,
       ktuvitSubID: subKtuvitId,
       description,
@@ -33,6 +43,9 @@ const downloadSrtFromKtuvit = (req, res) => {
   };
 
   const pipeFile = (fileContent, err) => {
+    if (responded || res.headersSent) {
+      return;
+    }
     if (err || !SRT_TIMESTAMP_PATTERN.test(fileContent || "")) {
       respondWithError(err, "Ktuvit did not return a valid SRT file.");
       return;
@@ -44,6 +57,7 @@ const downloadSrtFromKtuvit = (req, res) => {
       bytes: Buffer.byteLength(fileContent),
     });
 
+    responded = true;
     res.setHeader("Content-Type", "application/x-subrip; charset=utf-8");
     res.end(Buffer.from(fileContent));
   };
@@ -54,11 +68,15 @@ const downloadSrtFromKtuvit = (req, res) => {
     bytesAmountForDetection: DETECTION_BYTES,
   });
 
-  ktuvit
-    .downloadSubtitle(titleKtuvitId, subKtuvitId, pipeFile, {
-      bytesAmountForDetection: DETECTION_BYTES,
-    })
-    .catch((err) => respondWithError(err, "Error downloading SRT file."));
+  try {
+    Promise.resolve(
+      manager.downloadSubtitle(titleKtuvitId, subKtuvitId, pipeFile, {
+        bytesAmountForDetection: DETECTION_BYTES,
+      })
+    ).catch((err) => respondWithError(err, "Error downloading SRT file."));
+  } catch (err) {
+    respondWithError(err, "Error downloading SRT file.");
+  }
 };
 
 module.exports = { initSrtDownloader, downloadSrtFromKtuvit };

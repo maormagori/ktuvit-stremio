@@ -174,6 +174,27 @@ itself plus its status, never the contents of the SRT file.
 | `http` (default) | The above, plus a line per request |
 | `debug` | The above, plus the results of each Ktuvit call and every cache hit and miss |
 
+#### Upstream availability
+
+The HTTP server starts independently of Ktuvit authentication, so the landing
+page and manifest remain available when credentials are missing or Ktuvit is
+unreachable. A working manifest confirms HTTP availability, not that subtitle
+lookups can currently succeed.
+
+Authentication requests have a 10-second deadline. Concurrent requests share
+one login attempt; after a failed attempt, another request can retry after a
+30-second cooldown. Requests requiring unavailable authentication return HTTP
+503 with `Cache-Control: no-store` and `Retry-After`. Explicit upstream 401/403
+responses invalidate the session so a later request can log in again.
+
+Failed title lookups, subtitle-list requests, and downloads return non-cacheable
+HTTP 502 responses rather than successful empty results or invalid subtitle
+files. Successful lookups with no subtitles still return an empty list.
+
+These safeguards address known failure modes. They do not establish why any
+particular public deployment is unavailable, or recognize every possible
+authentication error returned by Ktuvit inside an HTTP 200 response.
+
 #### Caching
 
 Stremio appends the video's filename, hash and size to every subtitles request,
