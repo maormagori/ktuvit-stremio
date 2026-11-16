@@ -6,17 +6,13 @@ const express = require("express");
 const cors = require("cors");
 const { serveManifest } = require("./routes/manifest");
 const landing = require("./routes/landing/landing");
-const { initKtuvitManager } = require("./clients/ktuvit");
+const { ensureKtuvitReady } = require("./clients/ktuvit");
 const {
   extractTitleInfo,
   fetchSubsMiddleware,
   formatSubs,
-  initSubs,
 } = require("./routes/subs");
-const {
-  initSrtDownloader,
-  downloadSrtFromKtuvit,
-} = require("./routes/downloadSrt");
+const { downloadSrtFromKtuvit } = require("./routes/downloadSrt");
 
 const PORT = config.get("PORT");
 const HTTP = config.get("ssl") ? "https" : "http";
@@ -44,28 +40,19 @@ addon.get("/README.md", (req, res) => {
 
 addon.get("/subtitles/:type/:imdbId/:query?.json", [
   respondWithHeaders,
+  ensureKtuvitReady,
   extractTitleInfo,
   fetchSubsMiddleware,
   formatSubs,
 ]);
 
-addon.get("/srt/:ktuvitId/:subId?.srt", downloadSrtFromKtuvit);
+addon.get("/srt/:ktuvitId/:subId?.srt", [
+  ensureKtuvitReady,
+  downloadSrtFromKtuvit,
+]);
 
-async function init() {
-  logger.info("Starting initialization.");
-  try {
-    logger.info("Initializing Ktuvit manager.");
-    await initKtuvitManager();
-    logger.info("Initializing subs.");
-    await initSubs();
-    logger.info("Initializing srt downloader.");
-    await initSrtDownloader();
-    addon.listen(PORT, function () {
-      logger.info(`Started addon on: ${HTTP}://${HOSTNAME}:${PORT}`);
-    });
-  } catch (err) {
-    logger.error(err, { description: "Error initializing addon." });
-  }
-}
+const server = addon.listen(PORT, function () {
+  logger.info(`Started addon on: ${HTTP}://${HOSTNAME}:${PORT}`);
+});
 
-init();
+module.exports = { addon, server };

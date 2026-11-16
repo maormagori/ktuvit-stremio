@@ -1,4 +1,7 @@
-const { initKtuvitManager } = require("../clients/ktuvit");
+const {
+  initKtuvitManager,
+  invalidateKtuvitManager,
+} = require("../clients/ktuvit");
 const { type } = require("../common/ktuvitEnums");
 const { getOrFetch } = require("../common/subsCache");
 const logger = require("../common/logger");
@@ -10,8 +13,8 @@ let ktuvit;
 const LOCAL_SERVER_ENCODER_URL = "http://127.0.0.1:11470/subtitles.vtt?from=";
 const imdbIDRegex = /^tt\d{7,9}$/;
 
-const initSubs = async () => {
-  ktuvit = await initKtuvitManager();
+const initSubs = async (manager) => {
+  ktuvit = manager || (await initKtuvitManager());
   logger.info("Done initializing subs.");
 };
 
@@ -19,33 +22,43 @@ const exitEarlyWithEmptySubtitlesArray = (res) => {
   res.send({ subtitles: [] });
 };
 
+const respondWithUpstreamError = (res) => {
+  res.setHeader("Cache-Control", "no-store");
+  res.status(502).send({ subtitles: [] });
+};
+
 const fetchSubsMiddleware = async (req, res, next) => {
+  const manager = req.ktuvitManager || ktuvit;
   try {
     // The log sits inside the callback rather than around getOrFetch so that it
     // only fires when Ktuvit was actually asked. A cached list never reaches
     // here, and a line claiming a fetch that did not happen would make the log
     // useless for telling whether the cache is doing its job.
     const ktuvitFetchedSubs = await getOrFetch(req.title, async () => {
-      const subs = await fetchSubsFromKtuvit(req.title);
-      logger.debug("Fetched title subs from Ktuvit.", {
-        ktuvitID: req.title?.ktuvitID,
-        subsFound: subs?.length ?? 0,
-      });
-      return subs;
+      try {
+        const subs = await fetchSubsFromKtuvit(req.title, manager);
+        logger.debug("Fetched title subs from Ktuvit.", {
+          ktuvitID: req.title?.ktuvitID,
+          subsFound: subs?.length ?? 0,
+        });
+        return subs;
+      } catch (err) {
+        invalidateKtuvitManager(err, manager);
+        throw err;
+      }
     });
     req.ktuvitSubs = ktuvitFetchedSubs;
     next();
-  } catch (err) {
-    logger.error(err, {
-      description: "Error occurred while fetching title subs from ktuvit",
-      title: JSON.stringify(req.title || {}),
+  } catch {
+    logger.error("Error occurred while fetching title subs from ktuvit", {
+      ktuvitID: req.title?.ktuvitID,
     });
-    req.ktuvitSubs = [];
-    next();
+    respondWithUpstreamError(res);
   }
 };
 
 const extractTitleInfo = async (req, res, next) => {
+  const manager = req.ktuvitManager || ktuvit;
   const type = req.params.type;
   const [imdbID, season, episode] = deconstructImdbId(req.params.imdbId);
 
@@ -64,7 +77,7 @@ const extractTitleInfo = async (req, res, next) => {
       season,
       episode,
     });
-    const ktuvitID = await ktuvit.getKtuvitID({
+    const ktuvitID = await manager.getKtuvitID({
       type: type,
       imdbId: imdbID,
     });
@@ -77,15 +90,14 @@ const extractTitleInfo = async (req, res, next) => {
       next();
     }
   } catch (err) {
-    logger.error(err, {
+    invalidateKtuvitManager(err, manager);
+    logger.error("Unable to get title's ktuvit ID", {
       type,
       imdbID,
       season,
       episode,
-      extraArgs,
-      description: "Unable to get title's ktuvit ID",
     });
-    exitEarlyWithEmptySubtitlesArray(res);
+    respondWithUpstreamError(res);
   }
 };
 
@@ -106,20 +118,20 @@ const extractExtraArgs = (query) => {
   return extraArgs;
 };
 
-const fetchSubsFromKtuvit = async (title) => {
+const fetchSubsFromKtuvit = async (title, manager) => {
   switch (title.type) {
     case type.MOVIE:
       logger.info("Requesting movie's subs list from Ktuvit.", {
         ktuvitID: title.ktuvitID,
       });
-      return ktuvit.getSubsIDsListMovie(title.ktuvitID);
+      return manager.getSubsIDsListMovie(title.ktuvitID);
     case type.SERIES:
       logger.info("Requesting episode's subs list from Ktuvit.", {
         ktuvitID: title.ktuvitID,
         season: title.season,
         episode: title.episode,
       });
-      return ktuvit.getSubsIDsListEpisode(
+      return manager.getSubsIDsListEpisode(
         title.ktuvitID,
         title.season,
         title.episode
@@ -157,7 +169,9 @@ const formatSrtUrl = (ktuvitTitleId, ktuvitSubId) => {
 
   // Production deployment is behind a proxy so I remove the useless port.
   const PRODUCTION = config.util.getEnv("NODE_ENV") === "production";
-  const addonUrl = `${HTTP}://${HOSTNAME}${PRODUCTION ? "" : `:${PORT}`}`;
+  const addonUrl =
+    config.get("publicUrl").replace(/\/+$/, "") ||
+    `${HTTP}://${HOSTNAME}${PRODUCTION ? "" : `:${PORT}`}`;
 
   const finalSrtRoute = `${addonUrl}/srt/${ktuvitTitleId}/${ktuvitSubId}.srt`;
 

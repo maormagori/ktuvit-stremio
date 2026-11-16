@@ -1,0 +1,12 @@
+services:
+  addon:
+    build:
+      context: .
+      dockerfile: Dockerfile.local
+    env_file: .env
+    environment:
+      NODE_ENV: development
+      PORT: "3000"
+    ports:
+      - "127.0.0.1:${ADDON_BIND_PORT:-3000}:3000"
+    restart: unless-stopped
