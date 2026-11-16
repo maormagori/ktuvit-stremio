@@ -53,6 +53,9 @@ used in returned subtitle URLs, so it must be reachable from every client;
 Compose publishes port 3000 only on the host's loopback interface by default.
 If that port is already in use, set `ADDON_BIND_PORT` in `.env` to a free port
 and point your HTTPS proxy at that port; the container still uses port 3000.
+For direct HTTP access on a different host port, also set `PUBLIC_URL` to the
+client-facing URL, for example `http://localhost:3012`, so subtitle links use
+the same port as the manifest.
 Changing it to `3000:3000` exposes the addon on all host interfaces. Allow port
 3000 through your firewall only on your trusted LAN and do not forward it from
 your router. This addon has no client authentication.
