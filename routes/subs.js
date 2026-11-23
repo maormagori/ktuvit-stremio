@@ -1,4 +1,5 @@
 const { initKtuvitManager } = require("../clients/ktuvit");
+const cinemeta = require("../clients/cinemeta");
 const { type } = require("../common/ktuvitEnums");
 const { getOrFetch } = require("../common/subsCache");
 const logger = require("../common/logger");
@@ -64,9 +65,11 @@ const extractTitleInfo = async (req, res, next) => {
       season,
       episode,
     });
+    const name = await fetchTitleNameFromCinemeta(type, imdbID);
     const ktuvitID = await ktuvit.getKtuvitID({
       type: type,
       imdbId: imdbID,
+      name,
     });
     logger.debug("Received title's Ktuvit ID.", { imdbID, ktuvitID });
 
@@ -86,6 +89,24 @@ const extractTitleInfo = async (req, res, next) => {
       description: "Unable to get title's ktuvit ID",
     });
     exitEarlyWithEmptySubtitlesArray(res);
+  }
+};
+
+// Without a name, ktuvit-api looks it up on IMDb itself, so a Cinemeta failure
+// only costs us that slower path rather than the whole request.
+const fetchTitleNameFromCinemeta = async (type, imdbID) => {
+  try {
+    const name = await cinemeta.getTitleName(type, imdbID);
+    if (!name) {
+      logger.warn("Cinemeta returned no title name.", { imdbID });
+    }
+    return name;
+  } catch (err) {
+    logger.warn("Unable to get title name from Cinemeta.", {
+      imdbID,
+      error: err.message,
+    });
+    return undefined;
   }
 };
 
