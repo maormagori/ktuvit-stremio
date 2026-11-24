@@ -35,8 +35,7 @@ jobs:
           KTUVIT_USER_EMAIL: ${{ secrets.KTUVIT_USER_EMAIL }}
           KTUVIT_USER_HASHED_PASSWORD: ${{ secrets.KTUVIT_USER_HASHED_PASSWORD }}
         run: |
-          ssh dokku@a.baby-beamup.club config:set 4b139a4b7f94/ktuvit-stremio KTUVIT_USER_EMAIL="$KTUVIT_USER_EMAIL"
-          ssh dokku@a.baby-beamup.club config:set 4b139a4b7f94/ktuvit-stremio KTUVIT_USER_HASHED_PASSWORD="$KTUVIT_USER_HASHED_PASSWORD"
+          ssh dokku@a.baby-beamup.club config:set --no-restart 4b139a4b7f94/ktuvit-stremio KTUVIT_USER_EMAIL="$KTUVIT_USER_EMAIL" KTUVIT_USER_HASHED_PASSWORD="$KTUVIT_USER_HASHED_PASSWORD"
       - name: Deploy addon to beamup
         run: |
           git config user.name "github-cd"
