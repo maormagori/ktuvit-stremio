@@ -30,15 +30,18 @@ jobs:
           ssh-keyscan -H a.baby-beamup.club >> ~/.ssh/known_hosts
       - name: Add beamup remote repository
         run: git remote add beamup ${{ vars.BEAMUP_REPO }}
-      - name: Create env varriables
-        env:
-          KTUVIT_USER_EMAIL: ${{ secrets.KTUVIT_USER_EMAIL }}
-          KTUVIT_USER_HASHED_PASSWORD: ${{ secrets.KTUVIT_USER_HASHED_PASSWORD }}
-        run: |
-          ssh dokku@a.baby-beamup.club config:set --no-restart 4b139a4b7f94/ktuvit-stremio KTUVIT_USER_EMAIL="$KTUVIT_USER_EMAIL" KTUVIT_USER_HASHED_PASSWORD="$KTUVIT_USER_HASHED_PASSWORD"
       - name: Deploy addon to beamup
         run: |
           git config user.name "github-cd"
           git config user.email "cd@github.com"
           git commit --allow-empty -m "Beamup empty auto commit"
           git push beamup HEAD:master --force
+      # Runs after the push because Beamup's config:set also runs
+      # `dokku ps:start`, which fails until the push has built an image.
+      - name: Create env varriables
+        env:
+          KTUVIT_USER_EMAIL: ${{ secrets.KTUVIT_USER_EMAIL }}
+          KTUVIT_USER_HASHED_PASSWORD: ${{ secrets.KTUVIT_USER_HASHED_PASSWORD }}
+        run: |
+          ssh dokku@a.baby-beamup.club config:set 4b139a4b7f94/ktuvit-stremio KTUVIT_USER_EMAIL="$KTUVIT_USER_EMAIL"
+          ssh dokku@a.baby-beamup.club config:set 4b139a4b7f94/ktuvit-stremio KTUVIT_USER_HASHED_PASSWORD="$KTUVIT_USER_HASHED_PASSWORD"
